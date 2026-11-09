@@ -1,0 +1,96 @@
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+**/dingtalk.config.json
+**/secrets*.json
+**/*secret*.json
+
+# Databases and local application data
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+**/.data/
+**/fulltime-attendance-data/
+
+# Dependencies and runtimes
+**/node_modules/
+**/runtime/
+**/downloads/
+*.exe
+**/.venv/
+**/venv/
+**/dist/
+**/.next/
+**/.vinext/
+**/.wrangler/
+
+# Python / Node generated files
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+coverage/
+.nyc_output/
+
+# Temporary, isolated, and local backup directories
+.codex-tmp/
+.codex-isolated/
+.uploads/
+.agents/
+.trae/
+**/.local-backup-*/
+**/backups/
+integration-test-data-*/
+integration-test-logs-*/
+.pptx-build-*/
+presentation-output/
+
+# Logs and generated run artifacts
+*.log
+*.out
+*.err
+*.pid
+*.tmp
+*.bak
+*.bundle
+*.zip
+*.pdf
+
+# Personal/source attendance workbooks and exports
+*.xlsx
+*.xls
+*.csv
+*.tsv
+
+# Generated report artifacts; Markdown reports remain trackable
+outputs/*.html
+outputs/*.json
+outputs/*.xlsx
+_delivery_hrms_20260918/outputs/*.html
+
+# Keep the application template required by the full-time calculator
+# The application generates its blank workbook at runtime.
+
+# Historical copies and generated test responses
+**/*.bak*
+**/*.before_*.py
+**/legacy-code/
+/run_attendance*.py*
+staging/*-response.json
+staging/staging-month.json
+staging/fulltime-employee-roster.json
+staging/backend/*-result-*.json
+staging/backend/compare-*.json

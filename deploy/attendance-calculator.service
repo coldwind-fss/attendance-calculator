@@ -1,0 +1,24 @@
+[Unit]
+Description=Attendance Calculator and HR Workbench
+After=network.target
+
+[Service]
+Type=simple
+User=attendance-calculator
+Group=attendance-calculator
+WorkingDirectory=/opt/attendance-calculator/current
+EnvironmentFile=/etc/attendance-calculator/workbench.env
+ExecStart=/opt/attendance-calculator/current/.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 18405 --no-access-log
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=300
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+StateDirectory=attendance-calculator
+StateDirectoryMode=0700
+
+[Install]
+WantedBy=multi-user.target

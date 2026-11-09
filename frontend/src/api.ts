@@ -1,6 +1,5 @@
 export interface Session {
   actor: string
-  role: string
   csrf_token: string
 }
 

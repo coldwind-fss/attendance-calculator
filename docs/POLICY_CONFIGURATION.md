@@ -1,6 +1,6 @@
 # 环境与业务策略
 
-新实例启动时从 `HR_DATA_DIR` 读取运行数据。管理员账号通过 `HR_ADMIN_USERNAME` 和 `HR_ADMIN_PASSWORD` 配置。正式 HTTPS 入口配置 `HR_PUBLIC_BASE_URL`，钉钉外发及绩效 OA 分别通过 `HR_ENABLE_DINGTALK_DELIVERY` 和 `HR_ENABLE_PERFORMANCE_EXTERNAL` 启用。示例环境文件见 [部署目录](../deploy/workbench.env.example)。
+新实例启动时从 `HR_DATA_DIR` 读取运行数据，展示入口无需配置账号或密码。钉钉外发及绩效 OA 分别通过 `HR_ENABLE_DINGTALK_DELIVERY` 和 `HR_ENABLE_PERFORMANCE_EXTERNAL` 控制，演示环境保持关闭。示例环境文件见 [部署目录](../deploy/workbench.env.example)。
 
 `HR_COMPANY_POLICY` 指向运行环境提供的 JSON 文件。三个顶层对象可以按需填写。省略的人员特例为空，通用计算规则继续由代码执行。
 

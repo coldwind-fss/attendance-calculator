@@ -10,8 +10,6 @@ button:disabled { opacity: .6; cursor: wait; }
 .secondary { background: white; border-color: #dce2ed; color: #344db7; }
 .center { min-height: 100vh; display: grid; place-items: center; }
 .panel { background: white; border: 1px solid #e3e8f0; border-radius: 10px; margin: 0 0 16px; padding: 18px; }
-.login { width: min(380px, calc(100vw - 32px)); display: grid; gap: 12px; padding: 24px; }
-.eyebrow { color: #3958db; font-weight: 750; margin: 0; }
 .shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); min-height: 100vh; }
 aside { background: #1d2849; color: #edf1ff; padding: 18px 12px; }
 .brand { margin: 0 10px 24px; font-size: 21px; font-weight: 750; }

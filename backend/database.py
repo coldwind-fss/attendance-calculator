@@ -12,9 +12,6 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS sessions (
     token TEXT PRIMARY KEY, actor TEXT NOT NULL, csrf TEXT NOT NULL, expires_at INTEGER NOT NULL
 );
-CREATE TABLE IF NOT EXISTS login_attempts (
-    address TEXT PRIMARY KEY, attempts INTEGER NOT NULL, window_start INTEGER NOT NULL
-);
 CREATE TABLE IF NOT EXISTS source_files (
     id TEXT PRIMARY KEY, domain TEXT NOT NULL, source_type TEXT NOT NULL,
     filename TEXT NOT NULL, digest TEXT NOT NULL, size INTEGER NOT NULL,

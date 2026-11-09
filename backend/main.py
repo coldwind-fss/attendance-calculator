@@ -37,7 +37,7 @@ def create_app(settings=None):
             stopping.set()
             await asyncio.gather(work, receipts)
 
-    app = FastAPI(title="汇才 HR 管理平台", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="考勤计算系统", version="0.1.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.database = database
 

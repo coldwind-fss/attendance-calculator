@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { api, awaitJob, upload } from './api'
 
 interface AnalysisReference { analysis_id: string; month_id: string; created_at: string }
@@ -14,6 +14,7 @@ interface Analysis extends AnalysisReference {
   }
 }
 
+const props = defineProps<{ payroll: boolean }>()
 const month = ref(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit' }).format())
 const schedule = ref<{id: string; sheets: string[]}>()
 const tmall = ref<{id: string; sheets: string[]}>()
@@ -33,6 +34,11 @@ const historyCursor = ref<string | null>(null)
 const busy = ref(false)
 const progress = ref('')
 const error = ref('')
+
+watch(() => props.payroll, payroll => {
+  view.value = payroll ? 'payroll' : 'schedule'
+  if (payroll && !active.value && history.value.length) void openAnalysis(history.value[0].analysis_id)
+})
 
 function selected(event: Event) { return Array.from((event.target as HTMLInputElement).files ?? []) }
 function selectBackends(event: Event) {
@@ -136,8 +142,8 @@ onMounted(refresh)
 </script>
 
 <template>
-  <h1>兼职考勤</h1>
-  <p class="muted">按月核算直播排班、后台场次和经营数据。</p>
+  <h1>{{ payroll ? '薪资计算' : '兼职考勤' }}</h1>
+  <p class="muted">{{ payroll ? '根据兼职考勤工时计算应发、个税和实发工资。' : '按月核算直播排班、后台场次和经营数据。' }}</p>
   <form class="panel" @submit.prevent="run">
     <h2>新建核算</h2>
     <fieldset :disabled="busy">

@@ -3,7 +3,6 @@ import os
 import re
 import secrets
 import sys
-from base64 import urlsafe_b64encode
 from contextlib import asynccontextmanager
 from typing import Literal
 from urllib.parse import urlencode
@@ -104,23 +103,14 @@ def client_for(request):
     return client
 
 
-def bridge_headers(session):
-    headers = {"X-HR-Bridge-Scope": session.role}
-    if session.role == "performance":
-        headers["X-HR-Bridge-Actor"] = urlsafe_b64encode(session.actor.encode()).decode()
-    return headers
-
-
 def require_performance(request: Request):
-    session = read_session(request, False)
-    request.state.performance_session = session
-    return session
+    return read_session(request, False)
 
 
 async def call(request, path, method="GET", data=None):
     client = client_for(request)
     try:
-        result = await client.request(method, path, json=data, headers=bridge_headers(request.state.performance_session))
+        result = await client.request(method, path, json=data, headers={"X-HR-Bridge-Scope": "admin"})
     except httpx.RequestError:
         fail(502, "PERFORMANCE_UNAVAILABLE", "绩效兼容服务暂不可用")
     if result.status_code >= 400:
@@ -349,24 +339,25 @@ async def legacy_route(request: Request, path: str = ""):
     scope = allow_compat(request.method, path)
     if any(part in (".", "..") for part in path.split("/")):
         fail(404, "PERFORMANCE_ROUTE_NOT_FOUND", "找不到绩效入口")
-    scope_headers = bridge_headers(read_session(request, True)) if scope == "admin" else {"X-HR-Bridge-Scope": "public"}
+    if scope == "admin":
+        read_session(request, True)
     client = client_for(request)
     raw_path = request.scope["raw_path"].decode("ascii").removeprefix("/hrms/performance") or "/"
     query = request.url.query
     target = raw_path + (f"?{query}" if query else "")
-    headers = scope_headers | {"Content-Type": request.headers.get("Content-Type", "application/json")}
+    headers = {"X-HR-Bridge-Scope": scope, "Content-Type": request.headers.get("Content-Type", "application/json")}
     if request.method == "POST" and scope == "public":
         origin = request.headers.get("Origin")
         if origin and origin != f"{request.url.scheme}://{request.url.netloc}":
             fail(403, "ORIGIN_INVALID", "请求来源无效")
         if path in ("submit-mgr", "submit-bp") and request.cookies.get(COOKIE):
             try:
-                principal = read_session(request, True)
+                read_session(request, True)
             except HTTPException as error:
                 if error.status_code != 401:
                     raise
             else:
-                headers.update(bridge_headers(principal))
+                headers["X-HR-Bridge-Scope"] = "admin"
     try:
         upstream = await client.send(client.build_request(request.method, target, content=await request.body(), headers=headers),
                                      stream=True)

@@ -32,17 +32,18 @@ def workbook(*rows):
 
 
 class ParttimeSliceTest(unittest.TestCase):
-    def test_login_to_versioned_workbook(self):
+    def test_demo_to_versioned_workbook(self):
         with tempfile.TemporaryDirectory() as directory:
-            settings = Settings(Path(directory), "fixture-admin", "fixture-password", False)
+            settings = Settings(Path(directory), secure_cookie=False)
             with TestClient(create_app(settings)) as client:
                 self.assertEqual(client.get("/api/v1/attendance/parttime/months").status_code, 401)
-                login = client.post("/api/v1/session", json={"username": "fixture-admin", "password": "fixture-password"})
-                self.assertEqual(login.status_code, 200, login.text)
+                session = client.post("/api/v1/session")
+                self.assertEqual(session.status_code, 200, session.text)
+                self.assertEqual(client.post("/api/v1/session").json(), session.json())
                 event_types = client.get("/api/v1/event-schema").json()
                 payload = event_types["payload_schemas"]["attendance.parttime.analysis_completed.v1"]
                 self.assertEqual(set(payload["required"]), {"month_id", "analysis_id", "workbook_id"})
-                client.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+                client.headers["X-CSRF-Token"] = session.json()["csrf_token"]
                 schedule = workbook(
                     [None] * 5 + [datetime(2026, 8, day) for day in (1, 2, 3)],
                     ["官旗店", None, "09:00-11:00", None, "主播", "测试甲"],
@@ -86,7 +87,7 @@ class ParttimeSliceTest(unittest.TestCase):
 class FulltimeSliceTest(unittest.TestCase):
     def test_due_receipts_are_updated_without_opening_the_month(self):
         with tempfile.TemporaryDirectory() as directory:
-            settings = Settings(Path(directory), "fixture-admin", "fixture-password", False)
+            settings = Settings(Path(directory), secure_cookie=False)
             app = create_app(settings)
             db = app.state.database
             db.initialize()
@@ -119,11 +120,11 @@ class FulltimeSliceTest(unittest.TestCase):
                                "HR_PERFORMANCE_LINK_SECRET": "fixture-only-link-signing-key-for-workbench"})
     def test_calculate_publish_and_review_in_isolation(self):
         with tempfile.TemporaryDirectory() as directory:
-            settings = Settings(Path(directory), "fixture-admin", "fixture-password", False, performance_compat=True)
+            settings = Settings(Path(directory), secure_cookie=False, performance_compat=True)
             with TestClient(create_app(settings)) as client:
-                login = client.post("/api/v1/session", json={"username": "fixture-admin", "password": "fixture-password"})
-                self.assertEqual(login.status_code, 200, login.text)
-                client.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+                session = client.post("/api/v1/session")
+                self.assertEqual(session.status_code, 200, session.text)
+                client.headers["X-CSRF-Token"] = session.json()["csrf_token"]
                 self.assertEqual(client.get("/api/v1/performance/months").json(), {"items": []})
 
                 book = Workbook()
@@ -226,15 +227,14 @@ class FulltimeSliceTest(unittest.TestCase):
             report = migrate(target, fulltime_db=path / "workbench.sqlite", fulltime_workbooks=path / "fulltime" / "workbooks",
                              performance_zip=performance_zip)
             self.assertEqual(report["fulltime"]["tables"]["result_versions"], 2)
-            settings = Settings(target, "fixture-admin", "fixture-password", False, performance_compat=True)
+            settings = Settings(target, secure_cookie=False, performance_compat=True)
             with TestClient(create_app(settings)) as restored:
-                restored.post("/api/v1/session", json={"username": "fixture-admin", "password": "fixture-password"})
+                session = restored.post("/api/v1/session").json()
                 self.assertEqual(restored.get(route).json()["published_version_id"], version_id)
                 self.assertEqual(restored.get(f"/api/v1/attendance/fulltime/versions/{version_id}/workbook").status_code, 200)
                 okr = restored.get("/api/v1/performance/months/2026-09/assessments?assessment_type=okr").json()["items"]
                 self.assertEqual([(item["employee_id"], item["status"]) for item in okr], [("example", "invited")])
                 self.assertEqual(okr[0]["workflow"]["admin_action"], "remind")
-                session = restored.get("/api/v1/session").json()
                 csrf = {"X-CSRF-Token": session["csrf_token"]}
                 signature = restored.post("/api/v1/performance/signature-verifications", headers=csrf,
                     json={"employee_id": "example", "month": "2026-09", "document_type": "kpi"})
@@ -310,10 +310,10 @@ class HrSliceTest(unittest.TestCase):
                 "employees": [{"id": "e1", "name": "测试丙", "departmentIds": ["d1"], "title": "样例岗位", "rosterStatus": "在职"}],
             }), encoding="utf-8")
             with patch.dict("os.environ", {"HR_ORGANIZATION_FIXTURE": str(fixture), "HR_CANONICAL_DEPARTMENTS": "[]"}):
-                settings = Settings(path / "instance", "fixture-admin", "fixture-password", False)
+                settings = Settings(path / "instance", secure_cookie=False)
                 with TestClient(create_app(settings)) as client:
-                    login = client.post("/api/v1/session", json={"username": "fixture-admin", "password": "fixture-password"})
-                    client.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+                    session = client.post("/api/v1/session")
+                    client.headers["X-CSRF-Token"] = session.json()["csrf_token"]
                     sync = client.post("/api/v1/hr/organization-syncs", json={"scope": "current"})
                     self.assertEqual(sync.status_code, 202, sync.text)
                     deadline = time.monotonic() + 10

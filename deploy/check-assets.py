@@ -9,14 +9,8 @@ from openpyxl import load_workbook
 
 def main(environment: Path):
     settings = dict(word.split("=", 1) for word in split(environment.read_text(encoding="utf-8"), comments=True))
-    required = ("HR_ADMIN_USERNAME", "HR_ADMIN_PASSWORD")
-    missing = [key for key in required if not settings.get(key)]
-    if settings.get("HR_ADMIN_PASSWORD") == "replace-before-install":
-        missing.append("HR_ADMIN_PASSWORD (replace the example password)")
     if settings.get("HR_ENABLE_PERFORMANCE_COMPAT") != "1":
-        missing.append("HR_ENABLE_PERFORMANCE_COMPAT=1")
-    if missing:
-        raise SystemExit("Missing release settings: " + ", ".join(missing))
+        raise SystemExit("Set HR_ENABLE_PERFORMANCE_COMPAT=1 to include the performance demo")
 
     if template := settings.get("HR_FULLTIME_TEMPLATE"):
         with Path(template).open("rb") as stream:

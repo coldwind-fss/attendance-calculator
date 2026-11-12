@@ -15,6 +15,8 @@ Thumbs.db
 *.p12
 *.pfx
 **/dingtalk.config.json
+**/dingtalk_config.json
+**/company-policy.local.json
 **/secrets*.json
 **/*secret*.json
 
@@ -74,6 +76,9 @@ presentation-output/
 *.xls
 *.csv
 *.tsv
+**/roster.json
+**/assessment_roster.json
+**/fulltime-employee-roster.json
 
 # Generated report artifacts; Markdown reports remain trackable
 outputs/*.html
